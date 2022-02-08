@@ -190,6 +190,53 @@ const background = {
   return background;
 }
 
+const newCanos =()=>{
+  const canos = {
+    largura: 52,
+    altura: 400,
+    low:{
+      spriteX: 0,
+      spriteY: 169,
+    },
+
+    gap: 80,
+
+    high:{
+      spriteX: 52,
+      spriteY: 169,
+    },
+
+    update(){
+
+    },
+    desenha(){
+      const canoHighX = 220;
+      const canoHighY = -200;
+
+      const canoLowX = 120;
+      const canoLowY = 220;
+
+      context.drawImage(
+        sprites,
+        canos.high.spriteX, canos.high.spriteY,
+        canos.largura, canos.altura,
+        canoHighX, canoHighY,
+        canos.largura, canos.altura
+      )
+        
+      context.drawImage(
+        sprites,
+        canos.low.spriteX, canos.low.spriteY,
+        canos.largura, canos.altura,
+        canoLowX, canoLowY,
+        canos.largura, canos.altura
+      )
+      
+    }
+  }
+  return canos;
+}
+
 const newTelaGetReady = () =>{
   const getReady = {
   spriteX: 134,
@@ -241,15 +288,20 @@ const Telas={
           globais.navinha = newNavinha();
           globais.paisagem = newPaisagem();
           globais.chao = newChao();
+          globais.canos = newCanos();
           globais.telaGetReady = newTelaGetReady();
+
         },
 
         desenha(){
 
             globais.paisagem.desenha();
+            globais.canos.desenha();
             globais.chao.desenha();
             globais.navinha.desenha();
-            globais.telaGetReady.desenha();
+            
+           // globais.telaGetReady.desenha();
+
         },
 
         click(){
@@ -268,6 +320,7 @@ const Telas={
         desenha(){
             //Atualiza a tela do jogo(sem isso o game não se move):
             globais.navinha.update();
+            globais.canos.desenha();
             globais.chao.update();
             globais.paisagem.update();
 
