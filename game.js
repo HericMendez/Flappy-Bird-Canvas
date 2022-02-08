@@ -13,7 +13,7 @@ const collisionCheck =(objetoPlayer, objetoCenario)=>{
   const navinhaY = objetoPlayer.y + objetoPlayer.altura;
   const cenarioY = objetoCenario.y;
 
-  if(navinhaY >= cenarioY){
+  if(navinhaY >= cenarioY || navinhaY <0){
     return true;
   }
 
@@ -126,7 +126,7 @@ const newChao =()=>{
   y: canvas.height - 112,
 
   update(){
-    chao.x = parallax(chao, 1)
+    chao.x = parallax(chao, 2)
   },
 
   desenha() {
@@ -163,7 +163,7 @@ const background = {
   y: canvas.height - 204,
 
   update(){
-    background.x = parallax(background, 0.3);
+    background.x = parallax(background, 0.75);
   },
   desenha() {
     //Preenche a cor do plano de fundo:
@@ -199,38 +199,58 @@ const newCanos =()=>{
       spriteY: 169,
     },
 
-    gap: 80,
+    gap: 200,
 
     high:{
       spriteX: 52,
       spriteY: 169,
     },
 
+    pares: [
+      
+
+    ],
+
     update(){
+      if(frames%100===0){
+        console.log("Deu 100, quer ver: ", frames);
+        canos.pares.push({x: 320 , y: -180 * (Math.random()+1)},)
+      }
 
+      this.pares.forEach(par => par.x = par.x-2)
     },
+
+
     desenha(){
-      const canoHighX = 220;
-      const canoHighY = -200;
 
-      const canoLowX = 120;
-      const canoLowY = 220;
+      canos.pares.forEach((par)=>{
 
-      context.drawImage(
-        sprites,
-        canos.high.spriteX, canos.high.spriteY,
-        canos.largura, canos.altura,
-        canoHighX, canoHighY,
-        canos.largura, canos.altura
-      )
-        
-      context.drawImage(
-        sprites,
-        canos.low.spriteX, canos.low.spriteY,
-        canos.largura, canos.altura,
-        canoLowX, canoLowY,
-        canos.largura, canos.altura
-      )
+      const randomY = par.y;
+      const canoGap = 100;
+
+      const canoHighX = par.x;
+      const canoHighY = randomY;
+
+      const canoLowX = par.x;
+      const canoLowY = canos.altura + canoGap + randomY;
+
+        context.drawImage(
+          sprites,
+          canos.high.spriteX, canos.high.spriteY,
+          canos.largura, canos.altura,
+          canoHighX, canoHighY,
+          canos.largura, canos.altura
+        )
+          
+        context.drawImage(
+          sprites,
+          canos.low.spriteX, canos.low.spriteY,
+          canos.largura, canos.altura,
+          canoLowX, canoLowY,
+          canos.largura, canos.altura
+        )
+      })
+
       
     }
   }
@@ -296,11 +316,11 @@ const Telas={
         desenha(){
 
             globais.paisagem.desenha();
-            globais.canos.desenha();
+           globais.canos.desenha();
             globais.chao.desenha();
             globais.navinha.desenha();
             
-           // globais.telaGetReady.desenha();
+           globais.telaGetReady.desenha();
 
         },
 
@@ -310,9 +330,11 @@ const Telas={
         }, 
 
         update(){
-           //getReady.update();
+
            globais.chao.update();
            globais.paisagem.update();
+           //globais.canos.update();
+           
         }
     }, 
 
@@ -320,7 +342,7 @@ const Telas={
         desenha(){
             //Atualiza a tela do jogo(sem isso o game não se move):
             globais.navinha.update();
-            globais.canos.desenha();
+            globais.canos.update();
             globais.chao.update();
             globais.paisagem.update();
 
@@ -334,8 +356,10 @@ const Telas={
         update(){
             //A ordem importa! Itens de baixo da lista sobrepõem os de cima!
             globais.paisagem.desenha();
+            globais.canos.desenha();
             globais.chao.desenha();
             globais.navinha.desenha();
+
         }
     }
 
@@ -346,14 +370,22 @@ const Telas={
 const loop = () => {
   frames+=1;
   //console.log(frames)
-  telaAtiva.desenha();
+  
   telaAtiva.update();
+  telaAtiva.desenha();
   requestAnimationFrame(loop);
 };
 
+ 
 window.addEventListener('click', ()=>{
     telaAtiva.click();
 })
 
+window.onkeypress = (event)=> {
+  if (event.which == 32) {
+    console.log("pressed Spacebar") 
+    telaAtiva.click();
+  }
+}
 trocaTela(Telas.inicio);
 loop();
