@@ -1,0 +1,415 @@
+
+const canvas = document.querySelector("canvas");
+const context = canvas.getContext("2d");
+
+const sprites = new Image();
+sprites.src = "./sprites.png";
+
+
+let frames = 0; 
+const hitSound = new Audio();
+hitSound.src = "./efeitos/efeitos_hit.wav"
+
+
+const collisionCheck =(objetoPlayer, objetoCenario)=>{
+  const navinhaY = objetoPlayer.y + objetoPlayer.altura;
+  const cenarioY = objetoCenario.y;
+  
+  if(navinhaY >= cenarioY){
+    return true;
+  }
+
+  return false;
+};
+
+const parallax = (object, speed) =>{
+  const objetoMove = speed;
+  const objetoRepete = object.largura /2;
+  const movimentacao = object.x - objetoMove;
+  pontodeLoop = movimentacao % objetoRepete; 
+
+  return pontodeLoop; 
+}
+
+const createPlayerObject = () =>{
+  const navinha = {
+     //Posição da sprite no arquivo sprites.png:
+     spriteX: 0, 
+     spriteY: 0,
+   //Tamanho da sprite no Canvas (tela de jogo):
+     largura: 33,
+     altura: 24,
+   //Posição da imagem no Canvas:
+     x: 10,
+     y: 50,
+   //Variáveis de controle de gravidade:
+     gravity: 0.25,
+     speed: 0,
+   
+     jumpHeight: 5,
+   
+     update(){
+       if(collisionCheck(this, globais.chao)){
+         hitSound.play();
+
+         setTimeout(()=>{
+           trocaTela(Telas.inicio)
+         }, 500)
+         console.log("colidiu")
+         return;
+       }
+   
+   
+       //Velocidade/aceleração de queda do objeto "navinha":
+       this.speed = this.speed + this.gravity;
+       this.y = this.y + this.speed;
+
+     },
+
+     jump(){
+       console.log("up ", this.speed);
+       this.speed= -this.jumpHeight;
+       
+     },
+
+     movimentos: [
+       {spriteX: 0, spriteY: 0},
+       {spriteX: 0, spriteY: 26},
+       {spriteX: 0, spriteY: 52},
+     ],
+
+     frameAtual: 0,
+     updateFrame(){
+       const frameInterval = 10;
+       const frameLimit = frames%frameInterval ===0;
+       if(frameLimit){
+                 const baseIncrement = 1;
+       const increment = baseIncrement +this.frameAtual;
+       const baseRepeat = this.movimentos.length;
+       this.frameAtual = increment%baseRepeat;
+       }
+
+     },
+   
+     desenha() {
+         this.updateFrame();
+         const {spriteX, spriteY} = this.movimentos[this.frameAtual];
+
+       
+       
+       context.drawImage(
+         //image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight >> Parâmetros da função DrawImage
+         sprites, 
+         //image: Arquivo contendo as sprites (sprites.png)
+   
+         spriteX, spriteY, 
+         //sX, sY: Coordenadas X,Y da posição da sprite no arquivo de origem
+   
+         this.largura, this.altura,
+         //sWidth, sHeight: Largura, altura (X,Y) da sprite
+   
+         this.x, this.y,
+         //dX, dY: Coordenadas X,Y da  posição da sprite no Canvas
+   
+         this.largura, this.altura,
+         //dWidth, dHeight: Proporção X,Y da sprite no Canvas. Utiliza os mesmos valores de "sWidth, sHeight" em uma escala 1:1
+         
+         
+       );
+     },
+  }
+  return navinha;
+}
+
+const createPipes = () =>{
+  pipes = {
+    spriteX: 390,
+    spriteY: 0,
+    largura: 275,
+    altura: 204,
+    x: 0,
+    y: canvas.height - 204,
+
+    update() {
+      this.x = parallax(this, 0.3);
+    },
+
+    desenha() {
+      //Preenche a cor do plano de fundo:
+      context.fillStyle = "#70c5ce";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+  
+      context.drawImage(
+        sprites,
+        this.spriteX, this.spriteY,
+        this.largura, this.altura,
+        this.x, this.y,
+        this.largura, this.altura
+      );
+      //Completa a sprite do plano de fundo até o fim da tela do Canvas:
+      context.drawImage(
+        sprites,
+        this.spriteX, this.spriteY,
+        this.largura, this.altura,
+        this.x + this.largura, this.y,
+        this.largura, this.altura
+      );
+    },
+},
+/*Canos:*/
+{
+
+  largura: 52,
+altura: 400,
+high:{
+  spriteX: 52,
+  spriteY: 169,
+},
+low: {
+  spriteX: 0,
+  spriteY: 169,
+},
+gap: 80,
+  desenha() {
+    
+
+    this.pares.forEach((par)=>{ 
+
+      const randomY = par.y;
+    const PipeGapHeight = 100;
+
+    const pipeHighX = par.x;
+    const pipeHighY = randomY;
+
+    const pipeLowX = par.x;
+    const pipeLowY = this.altura +PipeGapHeight+randomY;
+      context.drawImage(
+        sprites,
+        this.high.spriteX, this.high.spriteY,
+        this.largura, this.altura,
+        pipeHighX, pipeHighY,
+        this.largura, this.altura)
+
+      context.drawImage(
+        sprites,
+        this.low.spriteX, this.low.spriteY,
+        this.largura, this.altura,
+        pipeLowX, pipeLowY,
+        this.largura, this.altura)
+
+    })
+
+  },
+  pares:[{ x: 100, y: -150 * (Math.random()+1)}],
+  update(){
+    if(frames%100===0){
+      console.log("It's over one hundred!!!")
+      this.pares.push({ x: 100, y: -150 * (Math.random()+1)})
+
+    }
+
+    this.pares.forEach(par => par.x = par.x-2)
+
+  }
+  }
+  return pipes;
+}
+
+const createBackground =() =>{
+  const background = {
+    spriteX: 390,
+      spriteY: 0,
+      largura: 275,
+      altura: 204,
+      x: 0,
+      y: canvas.height - 204,
+
+      update() {
+        background.x = parallax(background, 0.3);
+      },
+
+      desenha() {
+        //Preenche a cor do plano de fundo:
+        context.fillStyle = "#70c5ce";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    
+        context.drawImage(
+          sprites,
+          background.spriteX, background.spriteY,
+          background.largura, background.altura,
+          background.x, background.y,
+          background.largura, background.altura
+        );
+        //Completa a sprite do plano de fundo até o fim da tela do Canvas:
+        context.drawImage(
+          sprites,
+          background.spriteX, background.spriteY,
+          background.largura, background.altura,
+          background.x + background.largura, background.y,
+          background.largura, background.altura
+        );
+      }
+  }
+
+  return background;
+}
+
+const createChao =()=>{
+  const chao = {
+      
+  spriteX: 0,
+  spriteY: 610,
+  largura: 224,
+  altura: 112,
+  x: 0,
+  y: canvas.height - 112,
+
+    update(){
+      //console.log("ground move")
+      chao.x = parallax(chao, 1);
+
+      
+    },
+    desenha() {
+      context.drawImage(
+        //image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight >> Parâmetros da função DrawImage
+        sprites,
+        this.spriteX, this.spriteY,
+        this.largura, this.altura,
+        this.x, this.y,
+        this.largura, this.altura
+      );
+
+      
+        
+      context.drawImage(
+        //image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight >> Parâmetros da função DrawImage
+        sprites,
+        this.spriteX, this.spriteY,
+        this.largura, this.altura,
+        this.x + this.largura, this.y,
+        this.largura, this.altura
+      );
+    }
+  }
+
+  return chao;
+}
+
+const createTelaInicio =()=>{
+  const getready = {
+    
+    spriteX: 134,
+    spriteY: 0,
+    largura: 174,
+    altura: 152,
+    x: (canvas.width/2) - 174/2,
+    y: 50,
+  
+    desenha() {
+      context.drawImage(
+  
+        sprites,
+        this.spriteX, this.spriteY,
+        this.largura, this.altura,
+        this.x, this.y,
+        this.largura, this.altura
+      );
+    },
+  
+  }
+
+  return getready;
+}
+
+
+
+const globais = {};
+console.log(globais)
+
+let telaAtiva = {};
+const trocaTela =(novaTela)=>{
+    telaAtiva = novaTela;
+
+    if(telaAtiva.inicializa){
+      telaAtiva.inicializa();
+    }
+};
+const Telas={
+  inicio:{
+      inicializa(){
+        globais.navinha = createPlayerObject();
+        globais.chao = createChao();
+        globais.background = createBackground();
+        globais.pipes = createPipes();
+        globais.getready = createTelaInicio();
+        
+      },
+      
+      desenha(){    
+        globais.background.desenha();    
+        globais.pipes.desenha();
+        globais.chao.desenha();
+        globais.navinha.desenha();
+        globais.getready.desenha();
+      },
+
+
+
+      click(){
+        trocaTela(Telas.jogo)
+          
+      }, 
+
+      update(){
+        globais.chao.update();
+        globais.background.update();
+      }
+  }, 
+
+  jogo:{
+      desenha(){
+        //Atualiza a tela do jogo(sem isso o game não se move):
+        globais.background.update();
+        globais.navinha.update();
+        globais.chao.update();
+        globais.pipes.update();
+      },
+
+      click(){
+        globais.navinha.jump();
+      },
+
+      update(){
+          //A ordem importa! Itens de baixo da lista sobrepõem os de cima!
+          globais.background.desenha();
+          globais.chao.desenha();
+          globais.navinha.desenha();
+          globais.pipes.update();
+      }
+  }
+
+
+};
+
+
+console.log(globais);
+
+
+
+
+const loop = () => {
+  
+  telaAtiva.desenha();
+  telaAtiva.update();
+
+  frames +=1;
+  requestAnimationFrame(loop);
+};
+
+window.addEventListener('click', ()=>{
+    telaAtiva.click();
+});
+
+trocaTela(Telas.inicio);
+loop();
