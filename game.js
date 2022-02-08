@@ -9,7 +9,7 @@ let frames = 0;
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 
-const collisionCheck =(objetoPlayer, objetoCenario)=>{
+const colideComChao =(objetoPlayer, objetoCenario)=>{
   const navinhaY = objetoPlayer.y + objetoPlayer.altura;
   const cenarioY = objetoCenario.y;
 
@@ -19,6 +19,36 @@ const collisionCheck =(objetoPlayer, objetoCenario)=>{
 
   return false;
 };
+
+const colideComCanos=(cano)=>{
+  const navinhaTop = globais.navinha.y;
+  const navinhaBottom = globais.navinha.y +globais.navinha.altura;
+  
+  if(globais.navinha.x>=cano.x){
+      if(navinhaTop<=cano.canoHigh.y || navinhaBottom >=cano.canoLow.y) return true;
+  }
+  return false;
+ 
+}
+
+const gameOver =()=>{
+  hitSound.play();
+
+  setTimeout(()=>{
+    trocaTela(Telas.inicio)
+  }, 100 )
+  console.log("Game Over!")
+  
+}
+
+const parallax = (object, speed) =>{
+  const objetoMove = speed;
+  const objetoRepete = object.largura /2;
+  const movimentacao = object.x - objetoMove;
+  const parallax = movimentacao % objetoRepete; 
+
+  return parallax; 
+}
 
 
 const newNavinha = () =>{
@@ -39,13 +69,17 @@ const newNavinha = () =>{
       jumpHeight: 5,
 
       update(){
-        if(collisionCheck(navinha, globais.chao)){
+        if(colideComChao(navinha, globais.chao)){
+          /*
           hitSound.play();
 
           setTimeout(()=>{
             trocaTela(Telas.inicio)
           }, 500)
           console.log("colidiu")
+          return;*/
+          
+          gameOver();
           return;
         }
 
@@ -206,18 +240,24 @@ const newCanos =()=>{
       spriteY: 169,
     },
 
-    pares: [
-      
-
-    ],
+    pares: [],
 
     update(){
       if(frames%100===0){
-        console.log("Deu 100, quer ver: ", frames);
-        canos.pares.push({x: 320 , y: -180 * (Math.random()+1)},)
+        canos.pares.push({x: canvas.width , y: -180 * (Math.random()+1)});
       }
 
-      this.pares.forEach(par => par.x = par.x-2)
+      this.pares.forEach((par) => {
+        par.x = par.x-2 
+        if(par.x <=-50) canos.pares.shift();
+        if(colideComCanos(par)){
+
+          gameOver();
+        } 
+        
+      });
+
+      
     },
 
 
@@ -226,7 +266,7 @@ const newCanos =()=>{
       canos.pares.forEach((par)=>{
 
       const randomY = par.y;
-      const canoGap = 100;
+      const canoGap = 100 ;
 
       const canoHighX = par.x;
       const canoHighY = randomY;
@@ -249,6 +289,17 @@ const newCanos =()=>{
           canoLowX, canoLowY,
           canos.largura, canos.altura
         )
+
+        par.canoHigh = {
+          x: canoHighX,
+          y: canos.altura + canoHighY
+        }
+        par.canoLow = {
+          x: canoLowX,
+          y: canoLowY
+        }
+
+
       })
 
       
@@ -293,14 +344,7 @@ const trocaTela =(novaTela)=>{
 console.log(globais);
 
 
-const parallax = (object, speed) =>{
-  const objetoMove = speed;
-  const objetoRepete = object.largura /2;
-  const movimentacao = object.x - objetoMove;
-  const parallax = movimentacao % objetoRepete; 
 
-  return parallax; 
-}
 
 const Telas={
     inicio:{
@@ -383,7 +427,6 @@ window.addEventListener('click', ()=>{
 
 window.onkeypress = (event)=> {
   if (event.which == 32) {
-    console.log("pressed Spacebar") 
     telaAtiva.click();
   }
 }
