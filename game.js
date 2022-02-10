@@ -1,19 +1,38 @@
+const getLocalStorage = () =>JSON.parse(localStorage.getItem('db_score')) ?? {last: 0, best: 0, tries: 0};
+const setLocalStorage = (item) => localStorage.setItem('db_score', JSON.stringify(item));
+
+
+const browserDB = getLocalStorage()
 const sprites = new Image();
 sprites.src = "./sprites.png";
 
+const jumpSound = new Audio();
 const hitSound = new Audio();
-hitSound.src = "./efeitos/cuek.mp3"
+const bgMusic = new Audio();
+
+jumpSound.src  = "./efeitos/jump.wav"
+hitSound.src = "./efeitos/hit.wav"
+bgMusic.src = "./efeitos/giorno.mp3"
+
+
 
 let frames = 0;
 
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 
+const placar = {
+  last: browserDB.last,
+  best: browserDB.best,
+  tries:browserDB.tries,
+}
+
 const colideComChao =(objetoPlayer, objetoCenario)=>{
   const navinhaY = objetoPlayer.y + objetoPlayer.altura;
   const cenarioY = objetoCenario.y;
 
   if(navinhaY >= cenarioY || navinhaY <0){
+    
     return true;
   }
 
@@ -35,10 +54,7 @@ const colideComCanos=(cano)=>{
 
 
 
-const newRecord = (last, best)=>{
-  let newBest = 0;
-  if(last>best) return newBest;
-}
+
 
 const parallax = (object, speed) =>{
   const objetoMove = speed;
@@ -69,7 +85,8 @@ const newNavinha = () =>{
 
       update(){
         if(colideComChao(navinha, globais.chao)){
-      
+          placar.tries++;
+          placar.last = globais.score.pontos;
           hitSound.play();
           trocaTela(Telas.fim)
            return;
@@ -86,7 +103,7 @@ const newNavinha = () =>{
       },
 
       jump(){
-        console.log("up ", this.speed);
+        jumpSound.play();
         this.speed= -this.jumpHeight;
 
       },
@@ -245,8 +262,10 @@ const newCanos =()=>{
         if(colideComCanos(par)){
 
          hitSound.play();
+         placar.tries++;
+         placar.last = globais.score.pontos;
 
-
+          
           trocaTela(Telas.fim)
 
             console.log("Game Over!");
@@ -332,6 +351,34 @@ return getReady;
 }
 
 const newTelaGameOver = () =>{
+  const goldMedal = {
+    spriteX: 0,
+    spriteY: 124,
+    largura: 44,
+    altura: 44,
+    x: 72,
+    y: 130,  
+  }
+
+  const silverMedal = {
+    spriteX: 48,
+    spriteY: 78,
+    largura: 44,
+    altura: 44,
+    x: 72,
+    y: 130,  
+  }
+  const bronzeMedal = {
+    spriteX: 48,
+    spriteY: 124,
+    largura: 44,
+    altura: 44,
+    x: 72,
+    y: 130,  
+  }
+
+
+
   const gameOver = {
   spriteX: 134,
   spriteY: 153,
@@ -349,6 +396,50 @@ const newTelaGameOver = () =>{
       gameOver.x, gameOver.y,
       gameOver.largura, gameOver.altura
     );
+
+
+
+
+
+    context.font = '12px "Press Start 2P", cursive';
+    context.fillStyle = '#e86100';
+    context.textAlign = 'right';
+    context.fillText(placar.last, (canvas.width/2)+28 , canvas.height-340);
+    context.fillText(placar.best, (canvas.width/2)+88 , canvas.height-340);
+    context.fillText(placar.tries, (canvas.width/2)+88, canvas.height-305);
+
+    if(placar.last>=placar.best){
+      context.drawImage(
+        sprites,
+        goldMedal.spriteX, goldMedal.spriteY,
+        goldMedal.largura, goldMedal.altura,
+        goldMedal.x, goldMedal.y,
+        goldMedal.largura, goldMedal.altura
+      );
+      
+      context.font = '10px "Press Start 2P", cursive';
+      context.fillStyle = 'red';
+      context.textAlign = 'center';
+      context.fillText("New Record!!!", (canvas.width/2)+10, canvas.height-285);
+
+    }else if(placar.last>=placar.best-2){
+      context.drawImage(
+        sprites,
+        silverMedal.spriteX, silverMedal.spriteY,
+        silverMedal.largura, silverMedal.altura,
+        silverMedal.x, silverMedal.y,
+        silverMedal.largura, silverMedal.altura
+      );
+    }else{
+      context.drawImage(
+        sprites,
+        bronzeMedal.spriteX, bronzeMedal.spriteY,
+        bronzeMedal.largura, bronzeMedal.altura,
+        bronzeMedal.x, bronzeMedal.y,
+        bronzeMedal.largura, bronzeMedal.altura
+      );
+    }
+
   },
 };
 return gameOver;
@@ -356,8 +447,8 @@ return gameOver;
 
 const newScore =()=>{
   const score = {
-    pontos:  0,
-    recorde: 999,
+
+    pontos: 0,
 
 
     desenhaAtual(){
@@ -373,21 +464,36 @@ const newScore =()=>{
       context.font = '12px "Press Start 2P", cursive';
       context.fillStyle = 'white';
       context.textAlign = 'center';
-      context.fillText(`Top Score: ${this.recorde}`, (canvas.width/2), canvas.height-460),
+      context.fillText(`Top Score: ${placar.best} Tries: ${placar.tries}`, (canvas.width/2), canvas.height-460),
       context.font = '7px "Press Start 2P", cursive';
       context.fillStyle = 'red';
-      context.fillText(`Tap/click or press Spacebar to start...`, (canvas.width/2), canvas.height-50),
+      context.fillText(`Tap/click or press Spacebar to start...`, (canvas.width/2), canvas.height-50)
       
-      score.recorde;
+
     },
 
+
+    
     update(){
+
       if(frames%60===0){
-        score.pontos+=1
-      
+        this.pontos++;   
+
+
       }
+    
+      if(this.pontos>placar.best){
+        placar.best = placar.last;
+
+       
+      }
+      
+
+     // 
 
     },
+
+
 
 
   }
@@ -436,6 +542,8 @@ const Telas={
 
         click(){
             trocaTela(Telas.jogo)
+            bgMusic.play();
+            
 
         }, 
 
@@ -476,6 +584,7 @@ const Telas={
             globais.chao.desenha();
             globais.navinha.desenha();
             globais.score.desenhaAtual();
+            
 
 
         }
@@ -483,7 +592,12 @@ const Telas={
 
     fim: {
       desenha(){
+        
+        setLocalStorage(placar);
+        
         newTelaGameOver().desenha()
+
+        
       },
       update(){
 
@@ -500,11 +614,13 @@ const Telas={
 const loop = () => {
   frames+=1;
   //console.log(frames)
-  
+
   telaAtiva.update();
   telaAtiva.desenha();
   requestAnimationFrame(loop);
 };
+
+
 
  
 window.addEventListener('click', ()=>{
