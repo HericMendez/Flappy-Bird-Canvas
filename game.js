@@ -2,7 +2,7 @@ const sprites = new Image();
 sprites.src = "./sprites.png";
 
 const hitSound = new Audio();
-hitSound.src = "./efeitos/efeitos_hit.wav"
+hitSound.src = "./efeitos/cuek.mp3"
 
 let frames = 0;
 
@@ -24,21 +24,20 @@ const colideComCanos=(cano)=>{
   const navinhaTop = globais.navinha.y;
   const navinhaBottom = globais.navinha.y +globais.navinha.altura;
   
-  if(globais.navinha.x>=cano.x){
-      if(navinhaTop<=cano.canoHigh.y || navinhaBottom >=cano.canoLow.y) return true;
+  if((globais.navinha.x+ globais.navinha.largura)>=cano.x){
+     // if(navinhaTop<=cano.canoHigh.y || navinhaBottom >=cano.canoLow.y) return true;
+     if(navinhaTop<=cano.canoHigh.y) return true;
+     if(navinhaBottom>=cano.canoLow.y) return true;
   }
   return false;
  
 }
 
-const gameOver =()=>{
-  hitSound.play();
 
-  setTimeout(()=>{
-    trocaTela(Telas.inicio)
-  }, 100 )
-  console.log("Game Over!")
-  
+
+const newRecord = (last, best)=>{
+  let newBest = 0;
+  if(last>best) return newBest;
 }
 
 const parallax = (object, speed) =>{
@@ -70,17 +69,10 @@ const newNavinha = () =>{
 
       update(){
         if(colideComChao(navinha, globais.chao)){
-          /*
+      
           hitSound.play();
-
-          setTimeout(()=>{
-            trocaTela(Telas.inicio)
-          }, 500)
-          console.log("colidiu")
-          return;*/
-          
-          gameOver();
-          return;
+          trocaTela(Telas.fim)
+           return;
         }
 
 
@@ -252,7 +244,13 @@ const newCanos =()=>{
         if(par.x <=-50) canos.pares.shift();
         if(colideComCanos(par)){
 
-          gameOver();
+         hitSound.play();
+
+
+          trocaTela(Telas.fim)
+
+            console.log("Game Over!");
+            return;
         } 
         
       });
@@ -308,6 +306,8 @@ const newCanos =()=>{
   return canos;
 }
 
+
+
 const newTelaGetReady = () =>{
   const getReady = {
   spriteX: 134,
@@ -330,6 +330,70 @@ const newTelaGetReady = () =>{
 };
 return getReady;
 }
+
+const newTelaGameOver = () =>{
+  const gameOver = {
+  spriteX: 134,
+  spriteY: 153,
+  largura: 226,
+  altura: 200,
+  x: (canvas.width/2) - 226/2,
+  y: 50,
+
+  desenha() {
+    context.drawImage(
+
+      sprites,
+      gameOver.spriteX, gameOver.spriteY,
+      gameOver.largura, gameOver.altura,
+      gameOver.x, gameOver.y,
+      gameOver.largura, gameOver.altura
+    );
+  },
+};
+return gameOver;
+}
+
+const newScore =()=>{
+  const score = {
+    pontos:  0,
+    recorde: 999,
+
+
+    desenhaAtual(){
+      
+      context.font = '12px "Press Start 2P", cursive';
+      context.fillStyle = 'white';
+      context.fillText(`Score: ${this.pontos}s`, (canvas.width/2), canvas.height-460),
+      
+      score.pontos;
+    },
+    desenhaTopScore(){
+
+      context.font = '12px "Press Start 2P", cursive';
+      context.fillStyle = 'white';
+      context.textAlign = 'center';
+      context.fillText(`Top Score: ${this.recorde}`, (canvas.width/2), canvas.height-460),
+      context.font = '7px "Press Start 2P", cursive';
+      context.fillStyle = 'red';
+      context.fillText(`Tap/click or press Spacebar to start...`, (canvas.width/2), canvas.height-50),
+      
+      score.recorde;
+    },
+
+    update(){
+      if(frames%60===0){
+        score.pontos+=1
+      
+      }
+
+    },
+
+
+  }
+
+  return score;
+};
 
 const globais = {};
 
@@ -354,6 +418,7 @@ const Telas={
           globais.chao = newChao();
           globais.canos = newCanos();
           globais.telaGetReady = newTelaGetReady();
+          globais.score = newScore();
 
         },
 
@@ -365,6 +430,7 @@ const Telas={
             globais.navinha.desenha();
             
            globais.telaGetReady.desenha();
+           globais.score.desenhaTopScore();
 
         },
 
@@ -378,34 +444,54 @@ const Telas={
            globais.chao.update();
            globais.paisagem.update();
            //globais.canos.update();
+           globais.score.update();
            
         }
     }, 
 
     jogo:{
-        desenha(){
+        inicializa(){
+           globais.score = newScore();
+        },
+
+        update(){
             //Atualiza a tela do jogo(sem isso o game não se move):
             globais.navinha.update();
             globais.canos.update();
             globais.chao.update();
             globais.paisagem.update();
+            globais.score.update();
 
         },
 
         click(){
           globais.navinha.jump();
-          console.log(globais)
+         // console.log(globais)
         },
 
-        update(){
+        desenha(){
             //A ordem importa! Itens de baixo da lista sobrepõem os de cima!
             globais.paisagem.desenha();
             globais.canos.desenha();
             globais.chao.desenha();
             globais.navinha.desenha();
+            globais.score.desenhaAtual();
+
 
         }
-    }
+    },
+
+    fim: {
+      desenha(){
+        newTelaGameOver().desenha()
+      },
+      update(){
+
+      },
+      click(){
+        trocaTela(Telas.inicio);
+      }
+    } 
 
 
 };
