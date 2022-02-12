@@ -1,13 +1,12 @@
 function Cenario() {
   const cenario = {
     paisagem: {
-      spriteX: 390,
+      spriteX: 0,
       spriteY: 0,
-      largura: 275,
+      largura: 666,
       altura: 204,
-      def: 2,
       x: 0,
-      y: canvas.height - 204,
+      y: canvas.height - 250,
 
       update() {
         this.x = parallax(this, 0.75);
@@ -18,7 +17,7 @@ function Cenario() {
         context.fillRect(0, 0, canvas.width, canvas.height);
 
         context.drawImage(
-          sprites,
+          spritesCenario,
           this.spriteX,
           this.spriteY,
           this.largura,
@@ -30,7 +29,7 @@ function Cenario() {
         );
         //Completa a sprite do plano de fundo até o fim da tela do Canvas:
         context.drawImage(
-          sprites,
+          spritesCenario,
           this.spriteX,
           this.spriteY,
           this.largura,
@@ -45,8 +44,8 @@ function Cenario() {
 
     chao: {
       spriteX: 0,
-      spriteY: 610,
-      largura: 224,
+      spriteY: 230,
+      largura: 666,
       altura: 112,
       abc: 1,
       x: 0,
@@ -59,7 +58,7 @@ function Cenario() {
       desenha() {
         context.drawImage(
           //image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight >> Parâmetros da função DrawImage
-          sprites,
+          spritesCenario,
           this.spriteX,
           this.spriteY,
           this.largura,
@@ -72,7 +71,7 @@ function Cenario() {
 
         context.drawImage(
           //image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight >> Parâmetros da função DrawImage
-          sprites,
+          spritesCenario,
           this.spriteX,
           this.spriteY,
           this.largura,

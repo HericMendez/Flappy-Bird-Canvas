@@ -4,8 +4,8 @@ const newTelaGameOver = () => {
     spriteY: 124,
     largura: 44,
     altura: 44,
-    x: 72,
-    y: 130,
+    x: (canvas.width/2)-88,
+    y: 133,
   };
 
   const silverMedal = {
@@ -13,16 +13,16 @@ const newTelaGameOver = () => {
     spriteY: 78,
     largura: 44,
     altura: 44,
-    x: 72,
-    y: 130,
+    x: (canvas.width/2)-88,
+    y: 133,
   };
   const bronzeMedal = {
     spriteX: 48,
     spriteY: 124,
     largura: 44,
     altura: 44,
-    x: 72,
-    y: 130,
+    x: (canvas.width/2)-88,
+    y: 133,
   };
 
   const gameOver = {
@@ -30,7 +30,7 @@ const newTelaGameOver = () => {
     spriteY: 153,
     largura: 226,
     altura: 200,
-    x: canvas.width / 2 - 226 / 2,
+    x: (canvas.width / 2) - 226 / 2,
     y: 50,
 
     desenha() {
@@ -52,17 +52,20 @@ const newTelaGameOver = () => {
       context.fillText(
         highscore.last,
         canvas.width / 2 + 28,
-        canvas.height - 340
+      //  canvas.height - 340
+      canvas.height - (baseHeight + 43)
       );
       context.fillText(
         highscore.best,
         canvas.width / 2 + 88,
-        canvas.height - 340
+       // canvas.height - 340
+       canvas.height - (baseHeight + 43)
       );
       context.fillText(
         highscore.tries,
         canvas.width / 2 + 88,
-        canvas.height - 305
+        //canvas.height - 305
+        canvas.height - (baseHeight + 8)
       );
 
       if (highscore.last >= highscore.best) {
@@ -84,7 +87,7 @@ const newTelaGameOver = () => {
         context.fillText(
           "New Record!!!",
           canvas.width / 2 + 10,
-          canvas.height - 285
+          canvas.height - (baseHeight - 15)
         );
       } else if (highscore.last >= highscore.best - 2) {
         context.drawImage(

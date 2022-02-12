@@ -10,8 +10,14 @@ const setLocalStorage = (item) =>
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 
+
+
+
+
 const sprites = new Image();
+const spritesCenario = new Image();
 sprites.src = "./assets/sprites/sprites.png";
+spritesCenario.src = "./assets/sprites/sprites_cenario.png";
 
 const jumpSound = new Audio();
 const hitSound = new Audio();

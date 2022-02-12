@@ -16,7 +16,7 @@ const Score = () => {
       context.fillText(
         `Score: ${this.pontos}s`,
         canvas.width / 2,
-        canvas.height - 460
+        canvas.height - (baseHeight + 160)
       ),
         score.pontos;
     },
@@ -27,7 +27,7 @@ const Score = () => {
       context.fillText(
         `Top Score: ${highscore.best} Tries: ${highscore.tries}`,
         canvas.width / 2,
-        canvas.height - 460
+        canvas.height - (baseHeight + 160)
       ),
         (context.font = '7px "Press Start 2P", cursive');
       context.fillStyle = "red";
